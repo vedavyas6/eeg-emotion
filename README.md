@@ -3,12 +3,6 @@ An official repository for "A Deep Learning Approach for Emotion Recognition usi
 
 # Table of Contents
 - [Instructions To use the code](#Instructions-To-use-the-code)
-- [About DEAP Dataset](#About-DEAP-Dataset)
-- [EDA](#EDA-for-the-Data)
-- [power spectral density plot](#power-spectral-density-plot)
-- [Pre-processing](#Pre-processing)
-- [CNN Architecture and CNN+LSTM Architecture](#CNN-Architecture-and-CNN+LSTM-Architecture)
-- [Results](#Results)
 
 ## Instructions To use the code
 
