@@ -4,17 +4,6 @@
 # In[ ]:
 
 
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
-
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import normalize
@@ -25,7 +14,7 @@ from torch.utils.data import Subset
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.metrics import roc_curve, auc
+import matplotlib.pyplot as plt
 import torch
 import csv
 import torch.nn as nn
@@ -41,8 +30,8 @@ import os
 parser = argparse.ArgumentParser(description='Process data for emotion selection.')
 parser.add_argument('--data_directory', type=str, default = './DataTrainTestFiles',required=True,
                     help='Directory containing data and labels')
-#parser.add_argument('--emotion', type=int, default=3,
-#                    help='Emotion to select (0=Arousal, 1=Valence, 2=Dominance, 3=Like)')
+parser.add_argument('--emotion', type=int, default=3,
+                    help='Emotion to select (0=Arousal, 1=Valence, 2=Dominance, 3=Like)')
 
 args = parser.parse_args()
 
@@ -69,9 +58,6 @@ with open(train_label_file, 'rb') as fileTrainL:
 # Normalize the data
 X = normalize(X)
 
-x_train = np.array(X[:])
-
-'''
 # Select the specified emotion
 print(args.emotion)
 Z = np.ravel(Y[:, [args.emotion]])
@@ -81,45 +67,7 @@ Z= Z-1
 
 x_train = np.array(X[:])
 #y_train = to_categorical(Z)
-y_train = to_categorical(Z, num_classes=9)'''
-
-valence_threshold = 5.4
-arousal_threshold = 5.1
-dominance_threshold = (4.5 + 6.3) / 2
-liking_threshold = (3.6 + 6.4) / 2
-
-# Function to assign a class label based on the thresholds and secondary factors
-def assign_class(row, valence_threshold, arousal_threshold, dominance_threshold, liking_threshold):
-    valence, arousal, dominance, liking = row
-    valence_high = valence > valence_threshold
-    arousal_high = arousal > arousal_threshold
-    dominance_high = dominance > dominance_threshold
-    liking_high = liking > liking_threshold
-
-    if valence_high and arousal_high:
-        return 3
-    elif not valence_high and arousal_high:
-        return 2
-    elif valence_high and not arousal_high:
-        return 1
-    else:
-        return 0
-
-    # Adjust classification based on dominance and liking
-    if (valence_high and arousal_high) or (dominance_high or liking_high):
-        return 3
-    elif (not valence_high and arousal_high) or (dominance_high or liking_high):
-        return 2
-    elif (valence_high and not arousal_high) or (not dominance_high or not liking_high):
-        return 1
-    else:
-        return 0
-
-# Apply the function to each row in Y to get the class labels
-y_train_classes = np.array([assign_class(row, valence_threshold, arousal_threshold, dominance_threshold, liking_threshold) for row in Y])
-
-print(y_train_classes)
-
+y_train = to_categorical(Z, num_classes=9)
 
 # Load testing data and labels
 with open(test_data_file, 'rb') as fileTest:
@@ -128,9 +76,6 @@ with open(test_data_file, 'rb') as fileTest:
 with open(test_label_file, 'rb') as fileTestL:
     N = np.load(fileTestL)
 
-
-x_test = np.array(M[:])
-'''
 M = normalize(M)
 
 # Select the specified emotion
@@ -140,45 +85,7 @@ L = np.ravel(N[:, [args.emotion]])
 x_test = np.array(M[:])
 L = L-1
 #y_test = to_categorical(L)
-y_test = to_categorical(L, num_classes=9)'''
-
-valence_threshold = 5.4
-arousal_threshold = 5.1
-dominance_threshold = (4.5 + 6.3) / 2
-liking_threshold = (3.6 + 6.4) / 2
-
-
-# Function to assign a class label based on the thresholds and secondary factors
-def assign_class(row, valence_threshold, arousal_threshold, dominance_threshold, liking_threshold):
-    valence, arousal, dominance, liking = row
-    valence_high = valence > valence_threshold
-    arousal_high = arousal > arousal_threshold
-    dominance_high = dominance > dominance_threshold
-    liking_high = liking > liking_threshold
-
-    if valence_high and arousal_high:
-        return 3
-    elif not valence_high and arousal_high:
-        return 2
-    elif valence_high and not arousal_high:
-        return 1
-    else:
-        return 0
-
-    # Adjust classification based on dominance and liking
-    if (valence_high and arousal_high) or (dominance_high or liking_high):
-        return 3
-    elif (not valence_high and arousal_high) or (dominance_high or liking_high):
-        return 2
-    elif (valence_high and not arousal_high) or (not dominance_high or not liking_high):
-        return 1
-    else:
-        return 0
-
-# Apply the function to each row in Y to get the class labels
-y_test_classes = np.array([assign_class(row, valence_threshold, arousal_threshold, dominance_threshold, liking_threshold) for row in N])
-
-y_test_classes
+y_test = to_categorical(L, num_classes=9)
 
 
 
@@ -198,87 +105,59 @@ else:
 
 # Convert NumPy arrays to PyTorch tensors
 x_train = torch.Tensor(x_train).to(device)
-y_train_classes = torch.Tensor(y_train_classes).to(device)
+y_train = torch.Tensor(y_train).to(device)
 x_test = torch.Tensor(x_test).to(device)
-y_test_classes = torch.Tensor(y_test_classes).to(device)
+y_test = torch.Tensor(y_test).to(device)
 print(x_train.shape)
-print(y_train_classes.shape)
+print(y_train.shape)
 print(x_test.shape)
-print(y_test_classes.shape)
+print(y_test.shape)
 
 
-
-    
-class CNNLSTM(nn.Module):
-    def __init__(self, sequence_length, num_features, num_classes):
-        super(CNNLSTM, self).__init__()
-        # CNN layers
-        self.conv1 = nn.Conv1d(in_channels=num_features, out_channels=64, kernel_size=3, padding=1)
+class CustomCNN(nn.Module):
+    def __init__(self, input_shape, num_classes):
+        super(CustomCNN, self).__init__()
+        self.conv1 = nn.Conv1d(in_channels=input_shape[0], out_channels=64, kernel_size=3, padding=1)
         self.batchnorm1 = nn.BatchNorm1d(64)
-        self.pool1 = nn.MaxPool1d(kernel_size=2, stride=2)
-
+        self.pool1 = nn.MaxPool1d(kernel_size=1, stride=1)
         self.conv2 = nn.Conv1d(in_channels=64, out_channels=128, kernel_size=3, padding=1)
         self.batchnorm2 = nn.BatchNorm1d(128)
-        self.pool2 = nn.MaxPool1d(kernel_size=2, stride=2)
-
+        self.pool2 = nn.MaxPool1d(kernel_size=1, stride=1)
         self.conv3 = nn.Conv1d(in_channels=128, out_channels=256, kernel_size=3, padding=1)
         self.batchnorm3 = nn.BatchNorm1d(256)
-        self.pool3 = nn.MaxPool1d(kernel_size=2, stride=2)
-
-        # Adjust the input features to the LSTM layer according to your network's architecture
-        self.lstm_input_features = self._calculate_lstm_input_features(sequence_length)
-
-        # LSTM layers
-        self.lstm_hidden_size = 128
-        self.num_lstm_layers = 7
-        self.lstm = nn.LSTM(input_size=self.lstm_input_features, hidden_size=self.lstm_hidden_size, num_layers=self.num_lstm_layers, batch_first=True)
-
-        # Fully connected layers
-        self.fc1 = nn.Linear(self.lstm_hidden_size, 128)
+        self.pool3 = nn.MaxPool1d(kernel_size=1, stride=1)
+        self.fc1 = nn.Linear(256, 256)
         self.dropout1 = nn.Dropout(0.4)
-        self.fc2 = nn.Linear(128, 64)
+        self.fc2 = nn.Linear(256, 128)
         self.dropout2 = nn.Dropout(0.4)
-        self.fc3 = nn.Linear(64, num_classes)
-
-    def _calculate_lstm_input_features(self, sequence_length):
-        # Simulate a forward pass through the convolution and pooling layers
-        sample = torch.autograd.Variable(torch.rand(1, 1, sequence_length))
-        sample = self.pool1(F.relu(self.batchnorm1(self.conv1(sample))))
-        sample = self.pool2(F.relu(self.batchnorm2(self.conv2(sample))))
-        sample = self.pool3(F.relu(self.batchnorm3(self.conv3(sample))))
-        return sample.numel()
+        self.fc3 = nn.Linear(128, 64)
+        self.dropout3 = nn.Dropout(0.4)
+        self.fc4 = nn.Linear(64, num_classes)
 
     def forward(self, x):
-        # Reshape input to (batch_size, num_features, sequence_length)
-        x = x.view(x.size(0), 1, -1)
-
-        # Apply CNN layers
-        x = self.pool1(F.relu(self.batchnorm1(self.conv1(x))))
-        x = self.pool2(F.relu(self.batchnorm2(self.conv2(x))))
-        x = self.pool3(F.relu(self.batchnorm3(self.conv3(x))))
-
-        # Prepare for LSTM - Flatten and reshape
-        x = x.view(x.size(0), -1, self.lstm_input_features)
-
-        # Apply LSTM
-        x, (hn, cn) = self.lstm(x)
-
-        # Select the output of the last LSTM time step
-        x = x[:, -1, :]
-
-        # Apply Fully connected layers
-        x = F.relu(self.fc1(self.dropout1(x)))
-        x = F.relu(self.fc2(self.dropout2(x)))
-        x = self.fc3(x)
-
+        x = F.relu(self.conv1(x))
+        x = self.batchnorm1(x)
+        x = self.pool1(x)
+        x = F.relu(self.conv2(x))
+        x = self.batchnorm2(x)
+        x = self.pool2(x)
+        x = F.relu(self.conv3(x))
+        x = self.batchnorm3(x)
+        x = self.pool3(x)
+        x = x.view(x.size(0), -1)  
+        x = F.relu(self.fc1(x))
+        x = self.dropout1(x)
+        x = F.relu(self.fc2(x))
+        x = self.dropout2(x)
+        x = F.relu(self.fc3(x))
+        x = self.dropout3(x)
+        x = self.fc4(x)
         return F.log_softmax(x, dim=1)
 
 
-sequence_length = 128  # Sequence length of each sample
-num_features = 1      # Number of features per sequence element
-num_classes = 4      # Number of output classes
-model = CNNLSTM(sequence_length, num_features, num_classes)
-
+input_shape = (128, 1) 
+num_classes = 9 
+model = CustomCNN(input_shape, num_classes)
 model = model.to(device)
 
 print(model)
@@ -290,8 +169,8 @@ criterion = nn.CrossEntropyLoss().to(device)
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 
-train_dataset = TensorDataset(x_train, y_train_classes)
-test_dataset = TensorDataset(x_test, y_test_classes)
+train_dataset = TensorDataset(x_train, y_train)
+test_dataset = TensorDataset(x_test, y_test)
 
 # Convert datasets to DataLoaders
 #train_loader = DataLoader(train_dataset, batch_size=256, shuffle=True)
@@ -302,7 +181,7 @@ n_folds = 2
 kf = KFold(n_splits=n_folds, shuffle=True)
 
 # Prepare a CSV file to store the results
-custom_directory = './Lresults3'
+custom_directory = './results'
 file_name = 'fold_results.csv'
 
 file_path = os.path.join(custom_directory, file_name)
@@ -311,7 +190,7 @@ file_path = os.path.join(custom_directory, file_name)
 if not os.path.exists(custom_directory):
     os.makedirs(custom_directory)
 
-csv_file = open(f'./Lresults3/fold_results3.csv', mode='w', newline='')
+csv_file = open(f'./results/fold_results{args.emotion}.csv', mode='w', newline='')
 csv_writer = csv.writer(csv_file)
 csv_writer.writerow(['Fold', 'Final Train Accuracy', 'Final Val Accuracy', 'Average Train Accuracy', 'Average Val Accuracy', 'Final Train F1', 'Final Val F1', 'Average Train F1', 'Average Val F1'])
 
@@ -329,8 +208,7 @@ for fold, (train_idx, val_idx) in enumerate(kf.split(train_dataset)):
 
     # Reset the model for the new fold
     #model = Model()  # Replace with your model
-    #model = CNNLSTM(input_shape, num_classes)
-    model = CNNLSTM(sequence_length, num_features, num_classes)
+    model = CustomCNN(input_shape, num_classes)
     model.to(device)
     criterion = nn.CrossEntropyLoss().to(device)
     optimizer = optim.Adam(model.parameters(), lr=0.001)
@@ -350,37 +228,26 @@ for fold, (train_idx, val_idx) in enumerate(kf.split(train_dataset)):
         all_train_labels, all_train_predictions = [], []
 
         train_loader_tqdm = tqdm(train_loader_fold, desc=f"Epoch {epoch + 1}/{num_epochs} [Training]", unit="batch")
-
         for inputs, labels in train_loader_tqdm:
-            labels = labels.long()
             inputs, labels = inputs.to(device), labels.to(device)
 
             optimizer.zero_grad()
             outputs = model(inputs)
             loss = criterion(outputs, labels)
-            loss.backward()
+            loss.backward() 
             optimizer.step()
 
             running_loss += loss.item()
-
-            # Get the predicted class indices
             _, predicted = torch.max(outputs.data, 1)
-
-            # Calculate the number of correct predictions
+            _, labels_indices = torch.max(labels, 1)
             train_total += labels.size(0)
-            train_correct += (predicted == labels).sum().item()
+            train_correct += (predicted == labels_indices).sum().item()
 
-            # Extend the lists for all labels and predictions
-            all_train_labels.extend(labels.cpu().numpy())
+            all_train_labels.extend(labels_indices.cpu().numpy())
             all_train_predictions.extend(predicted.cpu().numpy())
 
-            # Update the progress bar
             train_loader_tqdm.set_postfix(loss=running_loss/len(train_loader_tqdm), accuracy=100.0 * train_correct / train_total)
 
-            
-            
-            
-        
         train_f1 = f1_score(all_train_labels, all_train_predictions, average='weighted')
         train_losses.append(running_loss / len(train_loader_fold))
         train_accuracies.append(100.0 * train_correct / train_total)
@@ -394,26 +261,21 @@ for fold, (train_idx, val_idx) in enumerate(kf.split(train_dataset)):
         val_loader_tqdm = tqdm(val_loader_fold, desc=f"Epoch {epoch + 1}/{num_epochs} [Validation]", unit="batch")
         with torch.no_grad():
             for inputs, labels in val_loader_tqdm:
-                labels = labels.long()
                 inputs, labels = inputs.to(device), labels.to(device)
+
                 outputs = model(inputs)
                 loss = criterion(outputs, labels)
                 val_loss += loss.item()
 
-                # Get the predicted class indices
                 _, predicted = torch.max(outputs.data, 1)
-
-                # Calculate the number of correct predictions
+                _, labels_indices = torch.max(labels, 1)
                 val_total += labels.size(0)
-                val_correct += (predicted == labels).sum().item()
+                val_correct += (predicted == labels_indices).sum().item()
 
-                # Extend the lists for all labels and predictions
-                all_val_labels.extend(labels.cpu().numpy())
+                all_val_labels.extend(labels_indices.cpu().numpy())
                 all_val_predictions.extend(predicted.cpu().numpy())
 
-                # Update the progress bar
                 val_loader_tqdm.set_postfix(loss=val_loss/len(val_loader_tqdm), accuracy=100.0 * val_correct / val_total)
-        
 
         val_f1 = f1_score(all_val_labels, all_val_predictions, average='weighted')
         val_losses.append(val_loss / len(val_loader_fold))
@@ -448,7 +310,7 @@ for fold, (train_idx, val_idx) in enumerate(kf.split(train_dataset)):
     plt.legend()
 
     plt.tight_layout()
-    plt.savefig(f'./Lresults3/loss3.png')
+    plt.savefig(f'./results/loss{args.emotion}.png')
     # Computing final and average metrics for the current fold
     final_train_accuracy = train_accuracies[-1]
     final_val_accuracy = val_accuracies[-1]
@@ -464,11 +326,12 @@ for fold, (train_idx, val_idx) in enumerate(kf.split(train_dataset)):
 
 # Close the CSV file
 csv_file.close()
-torch.save(model, f"./Lresults3/model_3.pt")
+torch.save(model, f"./results/model_{args.emotion}.pt")
 
 model.eval()  # Set the model to evaluation mode
 all_preds = []
 all_true = []
+
 with torch.no_grad():
     for inputs, labels in test_loader:
         inputs = inputs.to(device)
@@ -478,12 +341,9 @@ with torch.no_grad():
         predicted = np.argmax(outputs.cpu().numpy(), axis=1)
         all_preds.extend(predicted)
 
-        # If labels are already class indices, you can directly extend them to the list
-        all_true.extend(labels.cpu().numpy())
-
-accuracy = accuracy_score(all_true, all_preds)
-
-
+        # Convert true labels from one-hot encoded to class indices
+        true_labels = np.argmax(labels.cpu().numpy(), axis=1)
+        all_true.extend(true_labels)
 
 
 accuracy = accuracy_score(all_true, all_preds)
@@ -500,5 +360,23 @@ sns.heatmap(cm, annot=True, fmt='d')
 plt.xlabel('Predicted Labels')
 plt.ylabel('True Labels')
 plt.title('Confusion Matrix')
-plt.savefig(f'./Lresults3/confusion_matrix3.png')
+plt.savefig(f'./results/confusion_matrix{args.emotion}.png')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
