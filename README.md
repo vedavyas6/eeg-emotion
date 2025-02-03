@@ -16,7 +16,7 @@ An official repository for "A Deep Learning Approach for Emotion Recognition usi
 **Step 2**: now run the script `data.py` to. 
 
 ```
-python data.py --input_directory /home/mohan/Downloads/data_preprocessed_python/pre_data/ --num_subjects 5 --output_directory ./
+python data.py --input_directory /home/vedavyas/Downloads/data_preprocessed_python/pre_data/ --num_subjects 5 --output_directory ./
 ```
 here the `data.py` file takes 3 arguments. 
 1. input directory to the pre-processed files.
@@ -26,7 +26,7 @@ here the `data.py` file takes 3 arguments.
 **Step 3**: run the script `data-split.py`.
 
 ```
-python data-split.py --input_directory /home/mohan/Desktop/Data_selected --output_directory
+python data-split.py --input_directory /home/vedavyas/Desktop/Data_selected --output_directory
 ```
 This step takes the select data and then converts the data into train and test split numpy files. The default output directory is named as TrainTestfiles
 
