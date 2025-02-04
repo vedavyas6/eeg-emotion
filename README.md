@@ -16,7 +16,9 @@ An official repository for "A Deep Learning Approach for Emotion Recognition usi
 **Step 2**: now run the script `data.py` to. 
 
 ```
-python data.py --input_directory /home/vedavyas/Downloads/data_preprocessed_python/pre_data/ --num_subjects 5 --output_directory ./
+!python data.py --input_directory "/content/drive/MyDrive/project_eeg/data_preprocessed_python" \
+                --num_subjects 5\
+                --output_directory "./"
 ```
 here the `data.py` file takes 3 arguments. 
 1. input directory to the pre-processed files.
@@ -26,14 +28,15 @@ here the `data.py` file takes 3 arguments.
 **Step 3**: run the script `data-split.py`.
 
 ```
-python data-split.py --input_directory /home/vedavyas/Desktop/Data_selected --output_directory
+!python data-split.py --input_directory "/content/drive/MyDrive/project_eeg/" \
+                       --output_directory "/content/drive/MyDrive/project_eeg/output"
 ```
 This step takes the select data and then converts the data into train and test split numpy files. The default output directory is named as TrainTestfiles
 
 **Step 4**: 2 models are being proposed here. To run the model one (CNN) run the script `cTrain.py`. this code performs 5-fold cross-validation  on training data that is 85% and performs a test on 15% of the data. 
 
 ```
-python cTrain.py --data_directory ./Traintestfiles --emotion 0 
+!python cLTrain.py --data_directory "/content/drive/MyDrive/project_eeg" --emotion 0
 ```
 For training the network we need to provide where the data is present that is data directory and also select the emotion that we want to train our model for. 
 
